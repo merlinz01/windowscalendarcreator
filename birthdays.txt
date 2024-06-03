@@ -1,0 +1,32 @@
+# Any line in this file that starts with a "#" will be ignored.
+# All birthdays and anniversaries must have this format:
+#    <month>/<day>/<year-including-century> <name>
+# Anniversaries will be recognized by the "&" in the name.
+
+# January
+1/1/1900 John Doe
+
+# February
+2/1/1900 Mary Doe
+
+# March
+3/1/1492 John & Mary Doe
+
+# April
+
+# May
+
+# June
+
+# July
+
+# August
+
+# September
+
+# October
+
+# November
+
+# December
+

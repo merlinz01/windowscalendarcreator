@@ -1,0 +1,17 @@
+@comment: Any line in this file that starts with "@comment:" will be ignored.
+@comment: For any other line in this file that starts with "@some-tag:", the line will be given the font and color specified in the calendar.ini file, in the "Colors" and "Fonts" sections, from the "Addresses-some-tag" values.
+@comment: Other lines will be given font and color from the "Addresses" values.
+@comment:
+@name:John & Mary Doe
+123 Main Street
+Anytown, US 12345
+John's cell: 123-456-7890
+Mary's cell: 123-456-7891
+@email:johndoe@gmail.com
+
+@name:George Washington
+1 President's Ave.
+Washington, DC 00000
+Phone: 111-111-1111
+Cell: 911
+
