@@ -4,6 +4,8 @@ This is a simple family calendar PDF creator program for Windows.
 
 ## Usage
 
+You need a Windows computer with Microsoft Print to PDF and Python 3 installed.
+
 Configure the parameters in `calendar.ini`.
 
 Replace the month pictures, front cover picture, and back page picture with ones you like, with exactly the same filenames.
@@ -14,13 +16,17 @@ Add your family's deceased to `deaths.txt`.
 
 Put photo credits in `picture-credits.txt`.
 
-Run `calendar.py` on a Windows device that has Microsoft Print to PDF.
+In the project directory, run `python calendar.py`.
 
 A dialog will pop up asking you to where to save the file. Enter a filename and click Save.
 
 The calendar will take a bit to be generated. Look for the file you saved for the PDF calendar.
 
-If you want to prepare the calendar for commercial printing, the `add-bleed-with-pdfbooklet.ini` file is a configuration for [PDFBooklet](https://github.com/Averell7/PdfBooklet) for adding a bleed area around all the pages.
+If you want to speed up the generation while perfecting layout, set the `Skip-bitmaps` setting in `calendar.ini` to `true`.
+
+If you want to prepare the calendar for commercial printing,
+the `add-bleed-with-pdfbooklet.ini` file is a configuration for
+[PDFBooklet](https://github.com/Averell7/PdfBooklet) for adding a bleed area around all the pages.
 
 # License
 
