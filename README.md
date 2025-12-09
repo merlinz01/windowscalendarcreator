@@ -9,7 +9,7 @@ You need a Windows computer with Microsoft Print to PDF and Python 3 installed.
 Configure the parameters in `calendar.ini`.
 
 Replace the month pictures, front cover picture, and back page picture with ones you like, with exactly the same filenames.
-All pictures need to have 8.5x11 aspect ratio if you don't want them to be distorted in the output.
+All pictures need to have the same aspect ratio as the page size if you don't want them to be distorted in the output.
 
 Add your family birthdays and anniversaries to `birthdays.txt`.
 

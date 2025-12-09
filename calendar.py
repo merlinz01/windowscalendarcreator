@@ -25,10 +25,23 @@ gdiplus = ctypes.windll.gdiplus
 
 # Windows constants
 DM_ORIENTATION = 0x00000001
+DM_PAPERSIZE = 0x00000002
+DM_PAPERLENGTH = 0x00000004
+DM_PAPERWIDTH = 0x00000008
+DMORIENT_PORTRAIT = 1
 DMORIENT_LANDSCAPE = 2
 MM_HIENGLISH = 5
 TRANSPARENT = 1
 OPAQUE = 2
+
+# Paper size constants
+DMPAPER_LETTER = 1  # 8.5 x 11 inches
+DMPAPER_LEGAL = 5  # 8.5 x 14 inches
+DMPAPER_TABLOID = 3  # 11 x 17 inches
+DMPAPER_LEDGER = 4  # 17 x 11 inches
+DMPAPER_A3 = 8  # 297 x 420 mm
+DMPAPER_A4 = 9  # 210 x 297 mm
+DMPAPER_A5 = 11  # 148 x 210 mm
 
 # DrawText flags
 DT_LEFT = 0x00000000
@@ -352,8 +365,69 @@ def main():
     dm = DEVMODE()
     dm.dmSize = sizeof(DEVMODE)
     dm.dmFields = DM_ORIENTATION
-    dm.dmOrientation = DMORIENT_LANDSCAPE
-    dc = DC.Create("WINSPOOL", "Microsoft Print to PDF", byref(dm))
+
+    # Get orientation setting
+    orientation = (
+        cfg.get("General", "Orientation", fallback="Landscape").strip().upper()
+    )
+    is_landscape = orientation == "LANDSCAPE"
+    dm.dmOrientation = DMORIENT_LANDSCAPE if is_landscape else DMORIENT_PORTRAIT
+    print(f"Orientation: {'Landscape' if is_landscape else 'Portrait'}")
+
+    # Standard paper sizes (portrait dimensions: width x height)
+    paper_sizes = {
+        "LETTER": (DMPAPER_LETTER, 8.5, 11.0),
+        "LEGAL": (DMPAPER_LEGAL, 8.5, 14.0),
+        "TABLOID": (DMPAPER_TABLOID, 11.0, 17.0),
+        "LEDGER": (DMPAPER_LEDGER, 11.0, 17.0),
+        "A3": (DMPAPER_A3, 11.693, 16.535),
+        "A4": (DMPAPER_A4, 8.268, 11.693),
+        "A5": (DMPAPER_A5, 5.827, 8.268),
+    }
+
+    if cfg.has_option("General", "Paper-size"):
+        paper_size = cfg.get("General", "Paper-size").strip().upper()
+        if paper_size in paper_sizes:
+            dm_code, paper_width, paper_height = paper_sizes[paper_size]
+            dm.dmFields |= DM_PAPERSIZE
+            dm.dmPaperSize = dm_code
+            print(f"Paper size: {paper_size} ({paper_width} x {paper_height} inches)")
+        elif "X" in paper_size:
+            width, height = paper_size.split("X")
+            paper_width = float(width.strip())
+            paper_height = float(height.strip())
+            dm.dmFields |= DM_PAPERLENGTH | DM_PAPERWIDTH
+            dm.dmPaperSize = 0  # Custom paper size
+            dm.dmPaperWidth = int(paper_width * 254)
+            dm.dmPaperLength = int(paper_height * 254)
+            print(f"Custom paper size: {paper_width} x {paper_height} inches")
+        else:
+            raise ValueError(f"Unknown paper size: {paper_size}")
+    else:
+        # Default to Letter size
+        dm.dmFields |= DM_PAPERSIZE
+        dm.dmPaperSize = DMPAPER_LETTER
+        paper_width = 8.5
+        paper_height = 11.0
+        print("Paper size not specified; defaulting to Letter.")
+
+    page_width = int(paper_height * 1000)
+    page_height = int(paper_width * 1000)
+    if is_landscape:
+        page_width, page_height = (
+            max(page_width, page_height),
+            min(page_width, page_height),
+        )
+    else:
+        page_width, page_height = (
+            min(page_width, page_height),
+            max(page_width, page_height),
+        )
+    print(f"Page size in mils: {page_width} x {page_height}")
+
+    printer = cfg.get("General", "Printer", fallback="Microsoft Print to PDF")
+    print(f"Using printer: {printer}")
+    dc = DC.Create("WINSPOOL", printer, byref(dm))
     dc.SetMapMode(MM_HIENGLISH)
     dc.StartDoc("Calendar")
     dc.SetBkMode(transparent=True)
@@ -388,7 +462,7 @@ def main():
         dc.DrawText2(
             x,
             -y,
-            11000,
+            page_width,
             0,
             text,
             (DT_LEFT | DT_NOCLIP | DT_WORDBREAK | DT_NOPREFIX),
@@ -396,9 +470,9 @@ def main():
 
     def text_center(dc, x, y, text):
         dc.DrawText2(
-            x - 11000,
+            x - page_width,
             -y,
-            22000,
+            page_width * 2,
             0,
             text,
             (DT_CENTER | DT_NOCLIP | DT_WORDBREAK | DT_NOPREFIX),
@@ -455,7 +529,40 @@ def main():
         return height
 
     def get_layout(docpart):
-        return (int(x.strip()) for x in cfg.get("Layout", docpart).split(","))
+        """Parse layout values supporting percentages, units, and absolute values.
+
+        Percentages (e.g., "50%") are relative to page dimensions.
+        Units: "0.25in", "10mm", "2.5cm"
+        Absolute values (e.g., "500") are in mils (0.001 inch) as-is.
+        """
+
+        def parse_value(val, dimension_size):
+            val = val.strip()
+            if val.endswith("%"):
+                # Percentage of page dimension
+                return int(float(val[:-1]) / 100.0 * dimension_size)
+            elif val.endswith("in"):
+                # Inches to mils (1 inch = 1000 mils)
+                return int(float(val[:-2]) * 1000)
+            elif val.endswith("mm"):
+                # Millimeters to mils (1 mm = 39.37 mils)
+                return int(float(val[:-2]) * 39.37)
+            elif val.endswith("cm"):
+                # Centimeters to mils (1 cm = 393.7 mils)
+                return int(float(val[:-2]) * 393.7)
+            else:
+                # Absolute value in mils
+                return int(val)
+
+        values = cfg.get("Layout", docpart).split(",")
+        result = []
+        for i, val in enumerate(values):
+            # Alternate between width (even indices) and height (odd indices)
+            if i % 2 == 0:
+                result.append(parse_value(val, page_width))
+            else:
+                result.append(parse_value(val, page_height))
+        return result
 
     def get_color(docpart, section="Fill-colors"):
         return int(cfg.get(section, docpart), 16)
@@ -490,8 +597,16 @@ def main():
     #   Month Pages
     ################################################################################
     one_day = datetime.timedelta(days=1)
-    cellwidth, cellheight = get_layout("Grid-cell")
-    grid_x, grid_y = get_layout("Grid")
+
+    # Calculate grid dimensions based on margins
+    grid_left, grid_top, grid_right, grid_bottom = get_layout("Grid-margins")
+    grid_x = grid_left
+    grid_y = grid_top
+    available_width = page_width - grid_left - grid_right
+    available_height = page_height - grid_top - grid_bottom
+    cellwidth = available_width // 7  # 7 columns (days of week)
+    cellheight = available_height // 6  # 6 rows (max weeks in month)
+
     (weekday_y,) = get_layout("Weekdays")
     bd_format = cfg.get("General", "Birthday-format")
 
@@ -510,8 +625,9 @@ def main():
             # Box
             set_pen(dc, "Box-outline")
             dc.SetBrush(color=get_color("Box-color", month))
-            L, t, r, b = get_layout("Box")
-            dc.Rectangle(L, -t, r, -b)
+            lm, t, rm, b = get_layout("Box")
+            r = page_width - rm
+            dc.Rectangle(lm, -t, r, -b)
             # Month & year
             set_font(dc, "Month")
             dc.SetTextColor(get_color("Month"))
