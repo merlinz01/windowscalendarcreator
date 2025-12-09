@@ -9,6 +9,7 @@ You need a Windows computer with Microsoft Print to PDF and Python 3 installed.
 Configure the parameters in `calendar.ini`.
 
 Replace the month pictures, front cover picture, and back page picture with ones you like, with exactly the same filenames.
+All pictures need to have 8.5x11 aspect ratio if you don't want them to be distorted in the output.
 
 Add your family birthdays and anniversaries to `birthdays.txt`.
 
@@ -16,7 +17,9 @@ Add your family's deceased to `deaths.txt`.
 
 Put photo credits in `picture-credits.txt`.
 
-In the project directory, run `python calendar.py`.
+In File Explorer, right-click in the project folder and select *Open in Terminal*
+(or open Windows Terminal and run `cd C:\path\to\project\folder`).
+Then run `python calendar.py` to run the calendar generator program.
 
 A dialog will pop up asking you to where to save the file. Enter a filename and click Save.
 
