@@ -459,11 +459,11 @@ def main():
 
     page = in_page(dc)
 
-    def text_left(dc, x, y, text):
+    def text_left(dc, x, y, text, width=page_width):
         dc.DrawText2(
             x,
             -y,
-            page_width,
+            width,
             0,
             text,
             (DT_LEFT | DT_NOCLIP | DT_WORDBREAK | DT_NOPREFIX),
@@ -696,7 +696,8 @@ def main():
                         get_color("Anniversary" if "&" in name else "Birthday")
                     )
                     height = set_font(dc, "Anniversary" if "&" in name else "Birthday")
-                    Y -= height
+                    name = name.replace("\\n", "\n").strip()
+                    Y -= height * (name.count("\n") + 1)
                     text_left(
                         dc,
                         X + x,
@@ -708,6 +709,7 @@ def main():
                             month=month,
                             day=day,
                         ),
+                        width=cellwidth,
                     )
                 if wd == 6:
                     week += 1

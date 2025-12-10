@@ -2,6 +2,7 @@
 # All birthdays and anniversaries must have this format:
 #    <month>/<day>/<year-including-century> <name>
 # Anniversaries will be recognized by the "&" in the name.
+# If a name is longer than fits in one cell width, use \n to indicate a line break.
 
 # January
 1/1/1900 John Doe
@@ -40,4 +41,3 @@
 11/11/1918 Veterans Day
 
 # December
-
