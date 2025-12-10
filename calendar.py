@@ -441,6 +441,7 @@ def main():
     birthdays = [(*d.split("/"), n.strip()) for d, n in birthdays]
     birthdays = [(int(m), int(d), int(y), n) for m, d, y, n in birthdays]
     birthdays.sort(key=lambda v: (v[0], v[1]), reverse=True)
+    print(f"Loaded {len(birthdays)} birthdays.")
 
     class in_page:
         def __init__(self, dc):
@@ -679,7 +680,17 @@ def main():
                 # Birthdays
                 x, y = get_layout("Birthday")
                 Y += cellheight - y
-                while birthdays and birthdays[-1][:2] == (date.month, date.day):
+                while (
+                    birthdays
+                    and birthdays[-1][:2] == (date.month, date.day)
+                    or (
+                        date.year % 4 != 0
+                        and date.month == 2
+                        and date.day == 28
+                        and birthdays
+                        and birthdays[-1][:2] == (2, 29)
+                    )
+                ):
                     month, day, year, name = birthdays.pop(-1)
                     dc.SetTextColor(
                         get_color("Anniversary" if "&" in name else "Birthday")

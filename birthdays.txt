@@ -8,25 +8,36 @@
 
 # February
 2/1/1900 Mary Doe
+2/29/2000 Leap Year Baby
 
 # March
 3/1/1492 John & Mary Doe
+3/5/1980 Alice Smith
 
 # April
+4/10/1975 Bob Johnson
 
 # May
+5/15/1990 Charlie Brown
 
 # June
+6/20/1972 Jim Davis
+6/20/1972 Jack Davis
 
 # July
+7/4/1776 Independence Day
 
 # August
+8/8/1988 Eighty-Eight Day
 
 # September
+9/13/2013 National\nMarshmallow Day
 
 # October
+10/22/2000 John & Jane Smith
 
 # November
+11/11/1918 Veterans Day
 
 # December
 
